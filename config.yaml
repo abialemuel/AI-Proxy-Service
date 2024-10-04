@@ -1,0 +1,52 @@
+app:
+  name: "proxy-service"
+  port: 8080
+  version: "1.0.0"
+  env: "dev"
+  tribe: "tribe"
+ui:
+  host: "http://localhost:3000"
+log:
+  level: "info"
+  format: "json"
+redis:
+  host: "redis"
+  port: 6379
+  password: "redis"
+  db: 0
+mongo:
+  host: "mongo"
+  port: 27017
+  username: "admin"
+  password: "admin"
+  db: "proxy-service"
+apm:
+  enabled: true
+  host: "jaeger"
+  port: 4317
+  rate: 1
+microsoftOauth:
+  tenantID: "your-tenant-id"
+  clientID: "your-client-id"
+  clientSecret: "your-client-secret"
+  redirectURL: "your-redirect-url"
+googleOauth:
+  clientID: "your-client-id"
+  clientSecret: "your-client-secret"
+  redirectURL: "your-redirect-url"
+openAI:
+  host: "http://localhost:1234"
+  path: "/v1/chat/completions"
+  apiKey: "your-api-key"
+  tokenLifetime: 3600
+  tokenLimit: 10000
+services:
+  - tribe: "tribeA"
+    name: "code-review"
+    username: "user"
+    password: "password"
+  - tribe: "tribeB"
+    name: "chatbot"
+    username: "user"
+    password: "password"
+
