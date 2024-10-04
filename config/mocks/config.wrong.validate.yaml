@@ -1,0 +1,6 @@
+# just sample config file for config testing
+APM:
+    enabled: true
+    host: "otel-collector"
+    port: 4317
+    rate: 1

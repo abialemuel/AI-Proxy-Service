@@ -1,0 +1,15 @@
+# just sample config file for config testing
+App:
+    name: "proxy-service"
+    version: "1.0.0"
+    env: "dev"
+    tribe: "dpe"
+log:
+    level: "info"
+    format: "json"
+
+APM:
+    enabled: true
+    host: "otel-collector"
+    port: 4317
+    rate: 1
