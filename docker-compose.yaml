@@ -4,6 +4,9 @@ services:
   proxy-service:
     build:
       context: .
+      args:
+        - GITLAB_ID=${GIT_USERNAME}
+        - GITLAB_TOKEN=${GIT_ACCESS_TOKEN}
     depends_on:
       - redis
     env_file:
