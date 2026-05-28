@@ -1,45 +1,92 @@
 app:
-  name: "proxy-service"
-  port: 8080
-  version: "1.0.0"
+  name: "ai-proxy-service"
   env: "dev"
-  tribe: "tribe"
-ui:
-  host: "http://localhost:3000"
+  tribe: "platform"
+  version: "2.0.0"
+
 log:
   level: "info"
   format: "json"
+
+http:
+  port: 8080
+  readTimeoutSec: 15
+  writeTimeoutSec: 120
+  idleTimeoutSec: 60
+
+apm:
+  enabled: false
+  host: "jaeger"
+  port: 4317
+  rate: 1
+
 redis:
   host: "redis"
   port: 6379
-  password: "redis"
+  password: ""
   db: 0
+
 mongo:
   host: "mongo"
   port: 27017
   username: "admin"
   password: "admin"
   db: "proxy-service"
-apm:
-  enabled: true
-  host: "jaeger"
-  port: 4317
-  rate: 1
-microsoftOauth:
-  tenantID: "your-tenant-id"
-  clientID: "your-client-id"
-  clientSecret: "your-client-secret"
-  redirectURL: "your-redirect-url"
-googleOauth:
-  clientID: "your-client-id"
-  clientSecret: "your-client-secret"
-  redirectURL: "your-redirect-url"
-openAI:
-  host: "http://localhost:1234"
-  path: "/v1/chat/completions"
-  apiKey: "your-api-key"
-  tokenLifetime: 3600
-  tokenLimit: 10000
+
+oauth:
+  google:
+    clientID: "your-client-id"
+    clientSecret: "your-client-secret"
+    redirectURL: "http://localhost:8080/v1/auth/google/callback"
+  microsoft:
+    tenantID: "your-tenant-id"
+    clientID: "your-client-id"
+    clientSecret: "your-client-secret"
+    redirectURL: "http://localhost:8080/v1/auth/microsoft/callback"
+
+jwt:
+  secret: "change-me"
+  expiresHours: 24
+
+quota:
+  windowSec: 3600
+  tokensPerWindow: 100000
+
+# LLM provider registry. Each entry is gated by .enabled.
+# Auto-routing by model id:
+#   - openai          → gpt-*, o1*, o3*
+#   - anthropic       → claude-*
+#   - gemini          → gemini-*
+#   - azure-openai    → matches any model (Azure routes by `deployment`)
+# Use the `provider` field on a request to bypass auto-routing.
+providers:
+  openai:
+    enabled: false
+    baseURL: "https://api.openai.com/v1"
+    apiKey: "sk-..."
+    timeoutSec: 60
+
+  azure-openai:
+    enabled: false
+    baseURL: "https://your-resource.openai.azure.com"
+    apiKey: "your-azure-key"
+    apiVersion: "2024-02-15-preview"
+    deployment: "gpt-4o"
+    timeoutSec: 60
+
+  anthropic:
+    enabled: false
+    baseURL: "https://api.anthropic.com"
+    apiKey: "sk-ant-..."
+    apiVersion: "2023-06-01"
+    timeoutSec: 90
+
+  gemini:
+    enabled: false
+    baseURL: "https://generativelanguage.googleapis.com"
+    apiKey: "AIza..."
+    timeoutSec: 60
+
 services:
   - tribe: "tribeA"
     name: "code-review"
@@ -49,4 +96,3 @@ services:
     name: "chatbot"
     username: "user"
     password: "password"
-
