@@ -1,41 +1,17 @@
-# Build stage
-FROM golang:1.22 AS builder
-ENV CGO_ENABLED 0
-LABEL maintainer="DPE"
+# syntax=docker/dockerfile:1.7
 
-WORKDIR /app
-
-# PAT config
-ARG GITLAB_ID
-ARG GITLAB_TOKEN
-
-RUN git config --global url."https://gitlab.playcourt.id".insteadOf "ssh://git@gitlab.playcourt.id"
-
-ENV GOPRIVATE=gitlab.playcourt.id/*
-RUN echo "machine gitlab.playcourt.id login $GITLAB_ID password $GITLAB_TOKEN" > ~/.netrc
-
-# Copy everything from the current directory to the PWD(Present Working Directory) inside the container
+FROM golang:1.22-alpine AS build
+WORKDIR /src
+RUN apk add --no-cache git ca-certificates
+COPY go.mod go.sum* ./
+RUN go mod download
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
 
-# Download all dependencies
-RUN go mod tidy
-
-# Build the Go app
-RUN go build -ldflags='-s -w' -o bin/app main.go
-
-
-# Check if the binary was created
-RUN if [ ! -f bin/app ]; then echo "Go build failed"; exit 1; fi
-
-# Stage 2: Create a minimal runtime image
-FROM alpine:latest
-
+FROM gcr.io/distroless/static:nonroot
 WORKDIR /app
-
-COPY --from=builder /app/bin/app /bin/app
-COPY --from=builder /app/config.yaml  ./config.yaml 
-
-# Check if the binary was copied
-RUN if [ ! -f /bin/app ]; then echo "Binary not copied"; exit 1; fi
-
-CMD ["/bin/app", "-c", "/etc/config.yaml"]
+COPY --from=build /out/server /app/server
+COPY config.yaml /app/config.yaml
+USER nonroot:nonroot
+EXPOSE 8080
+ENTRYPOINT ["/app/server"]
